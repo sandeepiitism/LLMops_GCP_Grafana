@@ -149,6 +149,7 @@ gcloud compute instances delete <INSTANCE_NAME>
 
 
 
-[Watch demo video](https://github.com/user-attachments/assets/e3d144e2-63c2-4e22-902a-0517b730ab19)
+[Watch demo video](https://github.com/user-attachments/assets/38898da9-42f3-43d9-8405-f7fe5c3a8b1b)
+
 
 
