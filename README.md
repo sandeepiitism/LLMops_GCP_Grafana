@@ -145,8 +145,9 @@ kubectl get ns
 ## Make account on Grfaana cloud
 
 ### Install HELM - Search on Google
--- Copy commands from script section..
--- U will get 3 commands
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 
 
 ## Come to grafana cloud --> Left pane observability --> Kubernetes--> start sending data
