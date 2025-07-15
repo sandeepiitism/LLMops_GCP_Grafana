@@ -1,212 +1,152 @@
 # LLMops_GCP_Grafana
-This repo is for LLM deployement on GCP using docker, Kubernetes (MiniKube + Kubectl) and Grafana for monitoring the pods
 
+This repository provides a complete setup to deploy a Language Model (LLM) application on Google Cloud Platform (GCP) using Docker, Minikube + kubectl for container orchestration, and Grafana Cloud for monitoring.
 
-1. VM setup
+---
 
+## Overview
 
-2. Docker setup: https://docs.docker.com/engine/install/ubuntu/
+This setup includes:
 
-# Add Docker's official GPG key:
+- Provisioning a GCP VM
+- Installing and configuring Docker
+- Setting up Minikube and kubectl
+- Deploying a containerized LLM application
+- Monitoring Kubernetes pods using Grafana Cloud
+- GitHub integration for code version control
+
+---
+
+## 1. VM Setup
+
+Provision a VM instance (Ubuntu preferred) using the GCP Console. SSH into your instance and perform the following steps.
+
+---
+
+## 2. Docker Installation and Configuration
+
+Reference: https://docs.docker.com/engine/install/ubuntu/
+
+```bash
+# Install prerequisites
 sudo apt-get update
 sudo apt-get install ca-certificates curl
+
+# Add Docker's official GPG key
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# Add the repository to Apt sources:
+# Set up the Docker repository
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker packages
 sudo apt-get update
-
-#### Install the docker package
-
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-#### Verify Installation
-
+# Verify Docker installation
 sudo docker run hello-world
 
-
-#### Create the docker group and add user
-
+# Add user to Docker group
 sudo groupadd docker
-
 sudo usermod -aG docker $USER
-
 newgrp docker
-
 docker run hello-world
 
-#### Configure Docker to start on boot with systemd
-
+# Enable Docker on boot
 sudo systemctl enable docker.service
 sudo systemctl enable containerd.service
 
-#### check docker again
-
+# Check Docker version
 docker version
 
-## -------------------------------------------------------------------------------------------------- ##
 
-## minikube
-Ref: https://minikube.sigs.k8s.io/docs/start
-
-#### Install minikube
+# Download and install Minikube
+Reference: https://minikube.sigs.k8s.io/docs/start/
 
 curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+rm minikube-linux-amd64
 
-#### Start your cluster
+# Start Minikube
 minikube start
 
-
-## ---------------------------------------------------------------------------------------------------- ##
-## Kuberctl
-
-Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-
-#### Download
+# Download kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
-#### Install Kubectl
+# Install it
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Or install via snap
 sudo snap install kubectl --classic
+
+# Verify installation
 kubectl version --client
 
-## ---------------------------------------------------------------------------------------------------- ##
-Integration Github with GCP VM
-
-#### git clone on your VM (SSH)
+# Clone the repository
 git clone https://github.com/sandeepiitism/LLMops_GCP_Grafana.git
 
-#### config VM
-git config --global user.email "email"
-git config --global user.name "username" 
+# Set Git credentials
+git config --global user.email "your-email@example.com"
+git config --global user.name "your-username"
+
+# Commit and push code
 git add .
-git commit -m "gcp connected"
-git push origin main ---> create PAT tokens in github to get the password
+git commit -m "Initial commit from GCP VM"
+git push origin main
 
-## ---------------------------------------------------------------------------------------------------- ##
-GCP Firewall Rules
+Use a GitHub Personal Access Token (PAT) when prompted.
 
-
-
-
-
-
-## ---------------------------------------------------------------------------------------------------- ##
-Deploy App on VM
-
-### 5. Build and Deploy your APP on VM
-
-```bash
-## Point Docker to Minikube
+# Point Docker to Minikube
 eval $(minikube docker-env)
 
+# Build Docker image
 docker build -t llmops-app:latest .
 
+# Create Kubernetes secrets
 kubectl create secret generic llmops-secrets \
   --from-literal=GROQ_API_KEY="" \
   --from-literal=HUGGINGFACEHUB_API_TOKEN=""
 
+# Apply the deployment file
 kubectl apply -f llmops-k8s.yaml
 
-
+# Check pod status
 kubectl get pods
 
-### U will see pods runiing
-
-
-# Do minikube tunnel on one terminal
-
+# In one terminal
 minikube tunnel
 
-
-# Open another terminal
-
+# In another terminal
 kubectl port-forward svc/llmops-service 8501:80 --address 0.0.0.0
 
-## Now copy external ip and :8501 and see ur app there....
-
-
-```
-
-### 6. GRAFANA CLOUD MONITORING
-
-```bash
-## Open another VM terminal for Grfana cloud
-
+# Grafana Cloud Setup
 kubectl create ns monitoring
-
 kubectl get ns
 
-## Make account on Grfaana cloud
-
-### Install HELM - Search on Google
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
 
-
-## Come to grafana cloud --> Left pane observability --> Kubernetes--> start sending data
-## In backend installation --> Hit install
-## Give your clustername and namespace there : minikube and monitoring in our case
-## Select kubernetes
-## Keep other things on as default
-## Here only create new access token give name lets give minikube-token & Create it and save it somewhere..
-## Select helm and deploy helm charts is already generated...
-
-
-
-## Come to terminal --> Create a file
 vi values.yaml
 
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
 
-## Paste all from there to your file now remove last EOF part & and also initial part save that initial part we need it..
-
-Example : 
-
-helm repo add grafana https://grafana.github.io/helm-charts &&
-  helm repo update &&
-  helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
-    --namespace "monitoring" --create-namespace --values - <<'EOF'
-
-### Remove this above intial part and save it somewhere
-
-Then Esc+wq! amd save the file
-
-
-## Now use the copied command just make some modification:
-Remove that EOF part and instead write
---values values.yaml
-
-Example:
-
-helm repo add grafana https://grafana.github.io/helm-charts &&
-  helm repo update &&
-  helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
-    --namespace "monitoring" --create-namespace --values values.yaml
-
-## Paste this command on VM u will get status deployed revision 1
-## It means it was a SUCESS
-
-To check:
+helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+  --namespace "monitoring" --create-namespace --values values.yaml
 
 kubectl get pods -n monitoring
 
-# These are all should be running.....
+# Stop Minikube
+minikube stop
 
-Go to grafana cloud again..
-And below u will get go to homepage click it..
-Just refresh the page and boom..
+# Delete GCP VM
+gcloud compute instances delete <INSTANCE_NAME>
 
 
-Now u can see metrics related to your kubernetes cluster..
 
----Explore it for yourself now 
-
----Make sure to do cleanup 
-
-```
+https://github.com/user-attachments/assets/e3d144e2-63c2-4e22-902a-0517b730ab19
