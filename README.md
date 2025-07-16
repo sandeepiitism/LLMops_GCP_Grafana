@@ -74,6 +74,10 @@ rm minikube-linux-amd64
 # Start Minikube
 minikube start
 
+## ------------------------------------------------------------------------------------------------------------------------------- ##
+# Kubectl
+Ref: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
 # Download kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
